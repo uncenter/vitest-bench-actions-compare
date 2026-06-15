@@ -38,6 +38,7 @@ jobs:
       - name: Remove old cached benchmark results
         if: github.event_name == 'push'
         env:
+          GH_TOKEN: ${{ github.token }}
           CACHE_KEY: ${{ steps.cache-results-restore.outputs.cache-primary-key }}
         run: |
           CACHE_ID=$(gh cache list -k $CACHE_KEY --json id --jq '.[0].id')
