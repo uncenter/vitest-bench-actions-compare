@@ -1,44 +1,71 @@
-import { expect, test } from 'vitest'
-import { existsSync, readFileSync } from "node:fs";
-
+import { readFileSync } from "node:fs";
 import { load } from "js-yaml";
 import { parse } from "yaml";
+
+import { describe, test } from 'vitest';
+import { createBenchCache } from './lib.js';
 
 const lockfile = readFileSync("./resources/pnpm-lockfile.yaml", "utf-8");
 const workflow = readFileSync("./resources/pnpm-workflow.yaml", "utf-8");
 
-const existingResultsExist = existsSync('./results/')
+const cache = createBenchCache();
 
-test('lockfile performance', async ({ bench }) => {
-  const result = await bench.compare(
-    bench('js-yaml',
-      { writeResult: './results/js-yaml-lockfile.json' },
-      () => { load(lockfile) }
-    ),
-    bench('yaml',
-      { writeResult: './results/yaml-lockfile.json' },
-      () => { parse(lockfile) }
-    ),
-    ...(existingResultsExist ? [
-      bench.from('previous js-yaml', './results/js-yaml-lockfile.json'),
-      bench.from('previous yaml', './results/yaml-lockfile.json'),
-    ] : [])
-  )
-})
+describe('lockfile resource', () => {
+  const jsYaml = cache.ref('js-yaml-lockfile', 'js-yaml');
+  const yaml = cache.ref('yaml-lockfile', 'yaml');
 
-test('workflow performance', async ({ bench }) => {
-  const result = await bench.compare(
-    bench('js-yaml',
-      { writeResult: './results/js-yaml-workflow.json' },
-      () => { load(workflow) }
-    ),
-    bench('yaml',
-      { writeResult: './results/yaml-workflow.json' },
-      () => { parse(workflow) }
-    ),
-    ...(existingResultsExist ? [
-      bench.from('previous js-yaml', './results/js-yaml-workflow.json'),
-      bench.from('previous yaml', './results/yaml-workflow.json'),
-    ] : [])
-  )
-})
+  jsYaml.exists && test('js-yaml vs previous', async ({ bench }) => {
+    await bench.compare(
+      bench('current', {}, () => load(lockfile)),
+      jsYaml.load(bench, { name: 'previous' }),
+    );
+  });
+
+  yaml.exists && test('yaml vs previous', async ({ bench }) => {
+    await bench.compare(
+      bench('current', {}, () => parse(lockfile)),
+      yaml.load(bench, { name: 'previous' }),
+    );
+  });
+
+  jsYaml.exists && yaml.exists && test('previous head to head', async ({ bench }) => {
+    await bench.compare(jsYaml.load(bench), yaml.load(bench));
+  });
+
+  test('head to head', async ({ bench }) => {
+    await bench.compare(
+      jsYaml.save(bench, () => load(lockfile)),
+      yaml.save(bench, () => parse(lockfile)),
+    );
+  });
+});
+
+describe('workflow resource', () => {
+  const jsYaml = cache.ref('js-yaml-workflow', 'js-yaml');
+  const yaml = cache.ref('yaml-workflow', 'yaml');
+
+  jsYaml.exists && test('js-yaml vs previous', async ({ bench }) => {
+    await bench.compare(
+      bench('current', {}, () => load(workflow)),
+      jsYaml.load(bench, { name: 'previous' }),
+    );
+  });
+
+  yaml.exists && test('yaml vs previous', async ({ bench }) => {
+    await bench.compare(
+      bench('current', {}, () => parse(workflow)),
+      yaml.load(bench, { name: 'previous' }),
+    );
+  });
+
+  jsYaml.exists && yaml.exists && test('previous head to head', async ({ bench }) => {
+    await bench.compare(jsYaml.load(bench), yaml.load(bench));
+  });
+
+  test('head to head', async ({ bench }) => {
+    await bench.compare(
+      jsYaml.save(bench, () => load(workflow)),
+      yaml.save(bench, () => parse(workflow)),
+    );
+  });
+});
