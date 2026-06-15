@@ -1,6 +1,10 @@
 name: Benchmark
 
-on: push
+on:
+  push:
+    branches:
+      - main
+  pull_request:
 
 jobs:
   bench:
@@ -33,6 +37,7 @@ jobs:
 
       - name: Save cached benchmark results
         id: cache-results-save
+        if: github.event_name == 'push'
         uses: actions/cache/save@v5
         with:
           path: results
