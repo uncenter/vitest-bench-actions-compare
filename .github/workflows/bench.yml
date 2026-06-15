@@ -9,9 +9,6 @@ on:
 jobs:
   bench:
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
-      actions: write
     steps:
       - uses: actions/checkout@v6
 
