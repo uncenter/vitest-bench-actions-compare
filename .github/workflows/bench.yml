@@ -35,9 +35,17 @@ jobs:
       - name: Bench
         run: pnpm bench
 
-      - name: Save cached benchmark results
-        id: cache-results-save
+      - name: Remove old cached benchmark results
         if: github.event_name == 'push'
+        env:
+          CACHE_KEY: ${{ steps.cache-results-restore.outputs.cache-primary-key }}
+        run: |
+          CACHE_ID=$(gh cache list -k $CACHE_KEY --json id --jq '.[0].id')
+          [ -n "$CACHE_ID" ] && gh cache delete "$CACHE_ID"
+
+      - name: Save cached benchmark results
+        if: github.event_name == 'push'
+        id: cache-results-save
         uses: actions/cache/save@v5
         with:
           path: results
