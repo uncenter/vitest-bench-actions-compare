@@ -36,6 +36,7 @@ jobs:
       - name: Bench
         run: pnpm bench
 
+        # https://github.com/actions/cache/issues/1707
       - name: Remove old cached benchmark results
         if: github.event_name == 'push'
         env:
