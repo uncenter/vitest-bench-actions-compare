@@ -43,9 +43,10 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           CACHE_KEY: ${{ steps.cache-results-restore.outputs.cache-primary-key }}
         run: |
-          gh cache list -k "$CACHE_KEY" --json id --jq '.[0].id'
           CACHE_ID=$(gh cache list -k "$CACHE_KEY" --json id --jq '.[0].id')
-          [ -n "$CACHE_ID" ] && gh cache delete "$CACHE_ID"
+          if [ -n "$CACHE_ID" ]; then
+            gh cache delete "$CACHE_ID"
+          fi
 
       - name: Save cached benchmark results
         if: github.event_name == 'push'
