@@ -11,6 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+      actions: write
     steps:
       - uses: actions/checkout@v6
 
@@ -42,7 +43,8 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           CACHE_KEY: ${{ steps.cache-results-restore.outputs.cache-primary-key }}
         run: |
-          CACHE_ID=$(gh cache list -k $CACHE_KEY --json id --jq '.[0].id')
+          gh cache list -k "$CACHE_KEY" --json id --jq '.[0].id'
+          CACHE_ID=$(gh cache list -k "$CACHE_KEY" --json id --jq '.[0].id')
           [ -n "$CACHE_ID" ] && gh cache delete "$CACHE_ID"
 
       - name: Save cached benchmark results
