@@ -1,0 +1,39 @@
+name: Caching Primes
+
+on: push
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Restore cached benchmark results
+        id: cache-results-restore
+        uses: actions/cache/restore@v5
+        with:
+          path: results
+          key: ${{ runner.os }}-results
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v6
+        with:
+          version: 11
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Bench
+        run: pnpm bench
+
+      - name: Save cached benchmark results
+        id: cache-results-save
+        uses: actions/cache/save@v5
+        with:
+          path: results
+          key: ${{ steps.cache-results-restore.outputs.cache-primary-key }}
