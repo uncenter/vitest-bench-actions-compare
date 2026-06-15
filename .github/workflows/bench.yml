@@ -3,7 +3,7 @@ name: Benchmark
 on: push
 
 jobs:
-  build:
+  bench:
     runs-on: ubuntu-latest
 
     steps:
