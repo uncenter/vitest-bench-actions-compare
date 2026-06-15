@@ -1,9 +1,13 @@
 import { readFileSync } from "node:fs";
-import { load } from "js-yaml";
+import { load as _load } from "js-yaml";
 import { parse } from "yaml";
 
 import { describe, test } from 'vitest';
 import { createBenchCache } from './lib.js';
+
+function load(input) {
+  return [_load(input), _load(input + "\n")];
+}
 
 const lockfile = readFileSync("./resources/pnpm-lockfile.yaml", "utf-8");
 const workflow = readFileSync("./resources/pnpm-workflow.yaml", "utf-8");
